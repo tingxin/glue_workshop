@@ -1,0 +1,4 @@
+Faker
+PyMySQL
+pysqler
+boto3
