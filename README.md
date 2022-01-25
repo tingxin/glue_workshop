@@ -5,4 +5,10 @@ AWS Glue 是用于提取、转换和加载 (ETL) 操作的无服务器数据准�
 1. dwd.py 和 dws.py 具体的数据 ETL 代码
 2. mock.py 模拟生成订单数据
 3. secret.py 通过secret manager 生成的代码，需要修改注释部分 TODO 部分
- 
+
+
+## 更多相关workshop资源
+```
+https://github.com/toreydai/serverless-analytics-workshop
+https://github.com/aws-samples/amazon-redshift-commands-using-aws-glue
+```
