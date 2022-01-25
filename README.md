@@ -6,6 +6,8 @@ AWS Glue 是用于提取、转换和加载 (ETL) 操作的无服务器数据准�
 2. mock.py 模拟生成订单数据
 3. secret.py 通过secret manager 生成的代码，需要修改注释部分 TODO 部分
 
+## 操作文档
+参考 使用Glue进行大数据建设.pdf
 
 ## 更多相关workshop资源
 ```
