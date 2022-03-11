@@ -1,5 +1,5 @@
 # Use this code snippet in your app.
-# If you need more information about configurations or implementing the sample code, visit the AWS docs:   
+# If you need more information about configurations or implementing the sample code, visit the AWS docs:
 # https://aws.amazon.com/developers/getting-started/python/
 
 import boto3
@@ -8,11 +8,7 @@ from botocore.exceptions import ClientError
 import json
 
 
-def get_redshift_secret():
-    # TODO 修改成您的 secret_name， region_name
-    secret_name = "dev/workshop/redshift"
-    region_name = "ap-northeast-1"
-
+def get_redshift_secret(secret_name, region_name):
     # Create a Secrets Manager client
     session = boto3.session.Session()
     client = session.client(
@@ -57,9 +53,9 @@ def get_redshift_secret():
             secret_obj = json.loads(secret)
             return secret_obj
         else:
-            decoded_binary_secret = base64.b64decode(get_secret_value_response['SecretBinary'])
+            decoded_binary_secret = base64.b64decode(
+                get_secret_value_response['SecretBinary'])
             secret_obj = json.loads(decoded_binary_secret)
             return secret_obj
 
-            
-    # Your code goes here. 
+    # Your code goes here.
