@@ -10,14 +10,20 @@ from datetime import datetime, date, timedelta
 import time
 from secret import get_redshift_secret
 
+
 # TODO 修改成您的 secret_name， region_name
-secret_name = "dev/mall/redshift"
 region_name = "cn-northwest-1"
 
-redshift_info = get_redshift_secret(secret_name, region_name)
-redshift_host = redshift_info['host']
-redshift_port = redshift_info['port']
-redshift_jdbc = f"jdbc:redshift://{redshift_host}:{redshift_port}/dev"
+mysql_secret_name = 'dev/demo/mysql'
+redshift_secret_name = 'dev/mall/redshift'
+
+mysql_info = get_redshift_secret(mysql_secret_name, region_name)
+mysql_jdbc = f"jdbc:mysql://{mysql_info['host']}:{mysql_info['port']}/demo"
+mysql_user = mysql_info['username']
+mysql_pass = mysql_info['password']
+
+redshift_info = get_redshift_secret(redshift_secret_name, region_name)
+redshift_jdbc = f"jdbc:redshift://{redshift_info['host']}:{redshift_info['port']}/dev"
 redshift_user = redshift_info['username']
 redshift_pass = redshift_info['password']
 
@@ -28,18 +34,16 @@ sc = SparkContext()
 glueContext = GlueContext(sc)
 spark = glueContext.spark_session
 job = Job(glueContext)
-job.init("glue_mysql8", args)
+job.init(args['JOB_NAME'], args)
 
 # 从MySQL中读取数据
 connection_mysql8_options = {
-    "url": args['dburl'],
+    "url": mysql_jdbc,
     "dbtable": "order",
-    "user": args['dbuser'],
-    "password": args['dbpassword'],
+    "user": mysql_user,
+    "password": mysql_pass,
     "customJdbcDriverS3Path": args['mysqlJdbcS3path'],
-    "customJdbcDriverClassName": "com.mysql.cj.jdbc.Driver",
-    "jobBookmarkKeys": ["order_id"],
-    "jobBookmarkKeysSortOrder": "asc"
+    "customJdbcDriverClassName": "com.mysql.cj.jdbc.Driver"
 }
 
 # # 如果表中有自增id,或者唯一值数值类递增字段， 可以使用如下方式进行增量同步
@@ -63,16 +67,19 @@ df_catalog = glueContext.create_dynamic_frame.from_options(
 # df_filter = Filter.apply(frame = df_catalog, f = lambda x: x["amount"] >=10)
 # use spark api
 df = df_catalog.toDF()
-df = df.filter(df["amount"] >= 10)
 df = df.withColumn("create_date", fn.to_date(df["create_time"]))
+
+
 df.show(10)
 print("========> {0}".format(df.count()))
+
+df = df.filter(df["amount"] >= 10)
 dyn_df = DynamicFrame.fromDF(df, glueContext, "nested")
 
 # TODO 将 s3://tx-glue-workshop/redshift_dwd/ 替换成您的路径
 wirete_redshift_options = {
     "url": redshift_jdbc,
-    "dbtable": "order_dwd",
+    "dbtable": "order_dwd_ex",
     "user": redshift_user,
     "password": redshift_pass,
     "redshiftTmpDir": "s3://txt-glue-code/mall/redsift_temp/"
@@ -100,13 +107,14 @@ glueContext.write_dynamic_frame.from_options(
 
 # # example: 写入s3
 # # TODO 将 s3://tx-glue-workshop/s3_dwd/ 替换成您的路径
-# glueContext.write_dynamic_frame.from_options(
-#     frame=dyn_df,
-#     connection_type="s3",
-#     format="parquet",
-#     connection_options={"path": "s3://tx-glue-workshop/s3_dwd/", "partitionKeys": ["create_date"]},
-#     transformation_ctx="S3bucket_node3",
-# )
+glueContext.write_dynamic_frame.from_options(
+    frame=dyn_df,
+    connection_type="s3",
+    format="parquet",
+    connection_options={
+        "path": "s3://txt-glue-code/mall/data/", "partitionKeys": ["create_date"]},
+    transformation_ctx="S3bucket_node3",
+)
 
 # 写入mysql
 # wirete_mysql_options = {

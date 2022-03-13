@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 fake = Faker()
 
 
-def gen(interval_min=1000, interval_max=3000):
+def gen(interval_min=1000, interval_max=3000, increment_id=''):
     """
     间隔随机毫秒数生成模拟订单数据
     :param interval_min: 最小毫秒数
@@ -37,6 +37,9 @@ def gen(interval_min=1000, interval_max=3000):
             item["create_time"] = (
                 now - timedelta(minutes=m)).strftime("%Y-%m-%d %H:%M:%S")
             item["update_time"] = now_str
+
+        if increment_id:
+            item[increment_id] = int(now.timestamp())
 
         yield item
         interval = fake.random_int(min=interval_min, max=interval_max) * 0.001

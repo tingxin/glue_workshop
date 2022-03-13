@@ -8,11 +8,11 @@ from mock import gen
 
 focus_database = 'demo'
 conn = get_conn(focus_database)
-creator = gen()
+creator = gen(increment_id="sub_id")
 
 for item in creator:
     try:
-        command = Insert("`{0}`".format(setting.Focus_TB))
+        command = Insert("`{0}`".format("order_ex"))
         for key in item:
             command.put(key, item[key])
 
