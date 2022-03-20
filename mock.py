@@ -39,7 +39,7 @@ def gen(interval_min=1000, interval_max=3000, increment_id=''):
             item["update_time"] = now_str
 
         if increment_id:
-            item[increment_id] = int(now.timestamp())
+            item[increment_id] = int(now.timestamp() * 1000)
 
         yield item
         interval = fake.random_int(min=interval_min, max=interval_max) * 0.001
