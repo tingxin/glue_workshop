@@ -48,7 +48,22 @@ wirete_redshift_options = {
     "redshiftTmpDir": "s3://txt-glue-code/mall/redsift_temp/"
 }
 
+# use spark api
+# 重点，这里要修改 redshift_expression 为你的SQL
+redshift_expression = '(select max(order_id) as max_id from public.order_dwd_ex2 limit 1) as tview'
+df_redshift = glueContext.read.format(
+    "jdbc").option(
+    "url", redshift_jdbc).option(
+    "user", redshift_user).option(
+    "password", redshift_pass).option(
+    "dbtable", redshift_expression).option(
+    "aws_iam_role", "arn:aws:iam::515491257789:role/AWSGlueServiceRoleDefault").option(
+    "redshiftTmpDir", "s3://txt-glue-code/mall/redshift_temp3/"
+).load()
 
+row = df_redshift.collect()[0]
+begin_id = row[0]
+print(f"will begin from {begin_id}")
 
 while True:
     next_id = begin_id + delta
